@@ -4,91 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Viaje Neto" />
   <meta name="theme-color" content="#0b0d10" />
   <title>Viaje Neto</title>
-  <style>
-    :root { --bg:#0b0d10; --card:#161a20; --line:#2a313c; --text:#f3f5f7; --muted:#9aa3ad; --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#ff6a00; }
-    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:var(--bg); color:var(--text); padding:calc(env(safe-area-inset-top)+12px) 16px calc(env(safe-area-inset-bottom)+20px); }
-    h1 { font-size:22px; margin:0 0 4px; }
-    .sub { color:var(--muted); font-size:13px; margin:0 0 12px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:12px; }
-    label { display:block; font-size:12px; color:var(--muted); margin:0 0 5px; }
-    input { width:100%; background:#0f1216; border:1px solid var(--line); color:var(--text); border-radius:12px; padding:14px 12px; font-size:28px; font-weight:700; margin-bottom:10px; }
-    .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
-    .chips button { flex:1 1 28%; min-width:64px; background:#0f1216; color:var(--text); border:1px solid var(--line); border-radius:12px; padding:12px 0; font-size:16px; font-weight:700; }
-    .chips button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
-    .go { width:100%; background:var(--accent); color:#fff; border:0; border-radius:14px; padding:16px; font-size:20px; font-weight:800; }
-    .verdict { text-align:center; font-size:28px; font-weight:800; margin:2px 0; }
-    .ok { color:var(--green); } .mid { color:var(--yellow); } .no { color:var(--red); }
-    .big { font-size:42px; font-weight:800; text-align:center; }
-    .hint { font-size:14px; color:var(--muted); margin:10px 0 0; line-height:1.4; text-align:center; }
-    .hidden { display:none; }
-    .rule { font-size:15px; line-height:1.45; color:#d7dde4; }
-  </style>
 </head>
-<body>
-  <h1>Viaje Neto</h1>
-  <p class="sub">Modo 5 segundos · $4 por minuto</p>
-
-  <div class="card rule">
-    En la calle no uses la app. Suma los dos tiempos y multiplica por 4.<br>
-    Si pagan más → toma. Si pagan menos → suelta o contraoferta.
-  </div>
-
-  <div class="card">
-    <label>Lo que pagan</label>
-    <input id="pago" type="number" inputmode="decimal" placeholder="84" />
-
-    <label>Minutos totales (recoger + viaje)</label>
-    <div class="chips" id="mins">
-      <button type="button" onclick="setMin(12)">12</button>
-      <button type="button" onclick="setMin(16)">16</button>
-      <button type="button" onclick="setMin(20)">20</button>
-      <button type="button" onclick="setMin(25)">25</button>
-      <button type="button" onclick="setMin(30)">30</button>
-      <button type="button" onclick="setMin(40)">40</button>
-    </div>
-    <input id="min" type="number" inputmode="decimal" placeholder="o escribe los min" />
-    <button class="go" onclick="calc()">¿Conviene?</button>
-  </div>
-
-  <div class="card hidden" id="out">
-    <div id="verdict" class="verdict"></div>
-    <div id="hora" class="big"></div>
-    <p class="hint" id="contra"></p>
-  </div>
-
-  <script>
-    let chosen = 0;
-    function setMin(m){
-      chosen = m;
-      document.getElementById('min').value = m;
-      document.querySelectorAll('#mins button').forEach(b => b.classList.toggle('on', b.textContent == m));
-      calc();
-    }
-    function calc(){
-      const pago = parseFloat(document.getElementById('pago').value) || 0;
-      const min = parseFloat(document.getElementById('min').value) || chosen;
-      if (!pago || !min) return;
-      const gas = min * 0.54;
-      const neto = pago - gas;
-      const hora = neto / min * 60;
-      const minimo = Math.ceil(min * 4);
-      const out = document.getElementById('out');
-      out.classList.remove('hidden');
-      const v = document.getElementById('verdict');
-      if (pago >= minimo) { v.textContent = 'SÍ TOMA'; v.className = 'verdict ok'; }
-      else if (hora >= 150) { v.textContent = 'REGULAR'; v.className = 'verdict mid'; }
-      else { v.textContent = 'NO TOMES'; v.className = 'verdict no'; }
-      document.getElementById('hora').textContent = '$' + Math.round(hora) + '/hora';
-      document.getElementById('contra').textContent = pago >= minimo
-        ? 'Pega a $200/h con gasolina incluida.'
-        : 'Contraoferta mínimo $' + minimo + ' o suéltalo.';
-    }
-  </script>
-</body>
-</html>
+<body style="font-family:-apple-system,sans-serif;background:#0b0d10;color:#f3f5f7;margin:0;padding:20px">
+<p>Actualiza desde el archivo local si este placeholder aparece.</p>
+</body></html>
