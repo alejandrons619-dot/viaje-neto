@@ -9,204 +9,86 @@
   <meta name="apple-mobile-web-app-title" content="Viaje Neto" />
   <meta name="theme-color" content="#0b0d10" />
   <title>Viaje Neto</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect rx='22' width='100' height='100' fill='%23111111'/%3E%3Ctext x='50' y='64' font-size='48' text-anchor='middle' fill='%23ff6a00'%3E$%3C/text%3E%3C/svg%3E" />
   <style>
-    :root {
-      --bg: #0b0d10;
-      --card: #161a20;
-      --line: #2a313c;
-      --text: #f3f5f7;
-      --muted: #9aa3ad;
-      --green: #22c55e;
-      --yellow: #eab308;
-      --red: #ef4444;
-      --accent: #ff6a00;
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 24px);
-    }
-    h1 { font-size: 22px; margin: 0 0 4px; }
-    .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
-    .install {
-      background: #1d140c;
-      border: 1px solid #3a2a16;
-      color: #ffd7b0;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 14px;
-    }
-    .install b { color: #fff; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-    label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 5px; }
-    input {
-      width: 100%;
-      background: #0f1216;
-      border: 1px solid var(--line);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 13px 12px;
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    button {
-      width: 100%;
-      background: var(--accent);
-      color: #fff;
-      border: 0;
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    button.ghost {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: 15px;
-      padding: 12px;
-    }
-    .verdict { text-align: center; font-size: 26px; font-weight: 800; margin: 4px 0; }
-    .ok { color: var(--green); }
-    .mid { color: var(--yellow); }
-    .no { color: var(--red); }
-    .big { font-size: 40px; font-weight: 800; text-align: center; letter-spacing: -1px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-    .stat { background: #0f1216; border-radius: 12px; padding: 10px; }
-    .stat b { display: block; font-size: 20px; }
-    .stat span { font-size: 11px; color: var(--muted); }
-    .hint { font-size: 14px; color: var(--muted); margin: 10px 0 0; line-height: 1.4; }
-    .hidden { display: none; }
+    :root { --bg:#0b0d10; --card:#161a20; --line:#2a313c; --text:#f3f5f7; --muted:#9aa3ad; --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#ff6a00; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:var(--bg); color:var(--text); padding:calc(env(safe-area-inset-top)+12px) 16px calc(env(safe-area-inset-bottom)+20px); }
+    h1 { font-size:22px; margin:0 0 4px; }
+    .sub { color:var(--muted); font-size:13px; margin:0 0 12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:12px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:0 0 5px; }
+    input { width:100%; background:#0f1216; border:1px solid var(--line); color:var(--text); border-radius:12px; padding:14px 12px; font-size:28px; font-weight:700; margin-bottom:10px; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+    .chips button { flex:1 1 28%; min-width:64px; background:#0f1216; color:var(--text); border:1px solid var(--line); border-radius:12px; padding:12px 0; font-size:16px; font-weight:700; }
+    .chips button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .go { width:100%; background:var(--accent); color:#fff; border:0; border-radius:14px; padding:16px; font-size:20px; font-weight:800; }
+    .verdict { text-align:center; font-size:28px; font-weight:800; margin:2px 0; }
+    .ok { color:var(--green); } .mid { color:var(--yellow); } .no { color:var(--red); }
+    .big { font-size:42px; font-weight:800; text-align:center; }
+    .hint { font-size:14px; color:var(--muted); margin:10px 0 0; line-height:1.4; text-align:center; }
+    .hidden { display:none; }
+    .rule { font-size:15px; line-height:1.45; color:#d7dde4; }
   </style>
 </head>
 <body>
   <h1>Viaje Neto</h1>
-  <p class="sub" id="sub">Meta $200/h · Gas $1.35/km</p>
+  <p class="sub">Modo 5 segundos · $4 por minuto</p>
 
-  <div class="install" id="install">
-    Para dejarla como app en iPhone:<br>
-    1. Ábrela en <b>Safari</b> (no en Chrome).<br>
-    2. Toca el botón de <b>Compartir</b> (cuadrado con flecha).<br>
-    3. Elige <b>Agregar a pantalla de inicio</b>.
+  <div class="card rule">
+    En la calle no uses la app. Suma los dos tiempos y multiplica por 4.<br>
+    Si pagan más → toma. Si pagan menos → suelta o contraoferta.
   </div>
 
   <div class="card">
-    <label>Lo que te pagan</label>
-    <input id="pago" type="number" inputmode="decimal" placeholder="84.09" />
+    <label>Lo que pagan</label>
+    <input id="pago" type="number" inputmode="decimal" placeholder="84" />
 
-    <div class="row">
-      <div>
-        <label>Min recoger</label>
-        <input id="minPick" type="number" inputmode="decimal" placeholder="9" />
-      </div>
-      <div>
-        <label>Km recoger</label>
-        <input id="kmPick" type="number" inputmode="decimal" placeholder="1.9" />
-      </div>
+    <label>Minutos totales (recoger + viaje)</label>
+    <div class="chips" id="mins">
+      <button type="button" onclick="setMin(12)">12</button>
+      <button type="button" onclick="setMin(16)">16</button>
+      <button type="button" onclick="setMin(20)">20</button>
+      <button type="button" onclick="setMin(25)">25</button>
+      <button type="button" onclick="setMin(30)">30</button>
+      <button type="button" onclick="setMin(40)">40</button>
     </div>
-    <div class="row">
-      <div>
-        <label>Min viaje</label>
-        <input id="minTrip" type="number" inputmode="decimal" placeholder="16" />
-      </div>
-      <div>
-        <label>Km viaje</label>
-        <input id="kmTrip" type="number" inputmode="decimal" placeholder="8.7" />
-      </div>
-    </div>
-    <label>Espera extra (min)</label>
-    <input id="espera" type="number" inputmode="decimal" value="4" />
-    <button onclick="calc()">Calcular</button>
-    <button class="ghost" onclick="toggleSettings()">Cambiar meta o gasolina</button>
-  </div>
-
-  <div class="card hidden" id="settings">
-    <label>Meta por hora ($)</label>
-    <input id="meta" type="number" inputmode="decimal" value="200" />
-    <label>Gasolina por km ($)</label>
-    <input id="gasRate" type="number" inputmode="decimal" value="1.35" />
-    <button onclick="saveSettings()">Guardar</button>
+    <input id="min" type="number" inputmode="decimal" placeholder="o escribe los min" />
+    <button class="go" onclick="calc()">¿Conviene?</button>
   </div>
 
   <div class="card hidden" id="out">
     <div id="verdict" class="verdict"></div>
     <div id="hora" class="big"></div>
-    <div class="grid">
-      <div class="stat"><span>Neto después de gas</span><b id="neto"></b></div>
-      <div class="stat"><span>Tiempo total</span><b id="tiempo"></b></div>
-      <div class="stat"><span>Gasolina</span><b id="gas"></b></div>
-      <div class="stat"><span>Km totales</span><b id="kms"></b></div>
-    </div>
     <p class="hint" id="contra"></p>
   </div>
 
   <script>
-    function load() {
-      const meta = localStorage.getItem('meta') || '200';
-      const gas = localStorage.getItem('gas') || '1.35';
-      document.getElementById('meta').value = meta;
-      document.getElementById('gasRate').value = gas;
-      document.getElementById('sub').textContent = 'Meta $' + meta + '/h · Gas $' + gas + '/km';
-      if (window.navigator.standalone) {
-        document.getElementById('install').classList.add('hidden');
-      }
-    }
-    function n(id){ return parseFloat(document.getElementById(id).value) || 0; }
-    function money(x){ return '$' + Math.round(x); }
-    function toggleSettings(){
-      document.getElementById('settings').classList.toggle('hidden');
-    }
-    function saveSettings(){
-      localStorage.setItem('meta', document.getElementById('meta').value);
-      localStorage.setItem('gas', document.getElementById('gasRate').value);
-      load();
-      document.getElementById('settings').classList.add('hidden');
+    let chosen = 0;
+    function setMin(m){
+      chosen = m;
+      document.getElementById('min').value = m;
+      document.querySelectorAll('#mins button').forEach(b => b.classList.toggle('on', b.textContent == m));
+      calc();
     }
     function calc(){
-      const pago = n('pago');
-      const min = n('minPick') + n('minTrip') + n('espera');
-      const km = n('kmPick') + n('kmTrip');
-      const rate = n('gasRate') || 1.35;
-      const meta = n('meta') || 200;
-      const gas = km * rate;
+      const pago = parseFloat(document.getElementById('pago').value) || 0;
+      const min = parseFloat(document.getElementById('min').value) || chosen;
+      if (!pago || !min) return;
+      const gas = min * 0.54;
       const neto = pago - gas;
-      const hora = min > 0 ? neto / min * 60 : 0;
-      const paraMeta = min > 0 ? (meta * min / 60) + gas : 0;
-
+      const hora = neto / min * 60;
+      const minimo = Math.ceil(min * 4);
       const out = document.getElementById('out');
       out.classList.remove('hidden');
       const v = document.getElementById('verdict');
-      if (hora >= meta) { v.textContent = 'SÍ TOMA'; v.className = 'verdict ok'; }
-      else if (hora >= meta * 0.75) { v.textContent = 'REGULAR'; v.className = 'verdict mid'; }
+      if (pago >= minimo) { v.textContent = 'SÍ TOMA'; v.className = 'verdict ok'; }
+      else if (hora >= 150) { v.textContent = 'REGULAR'; v.className = 'verdict mid'; }
       else { v.textContent = 'NO TOMES'; v.className = 'verdict no'; }
-
-      document.getElementById('hora').textContent = money(hora) + '/hora';
-      document.getElementById('neto').textContent = money(neto);
-      document.getElementById('tiempo').textContent = min + ' min';
-      document.getElementById('gas').textContent = money(gas);
-      document.getElementById('kms').textContent = km.toFixed(1);
-      document.getElementById('contra').textContent =
-        hora >= meta
-          ? 'Este viaje sí pega a tu meta.'
-          : 'Para $' + meta + '/h contraoferta mínimo a $' + Math.ceil(paraMeta) + '.';
-      out.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('hora').textContent = '$' + Math.round(hora) + '/hora';
+      document.getElementById('contra').textContent = pago >= minimo
+        ? 'Pega a $200/h con gasolina incluida.'
+        : 'Contraoferta mínimo $' + minimo + ' o suéltalo.';
     }
-    load();
   </script>
 </body>
 </html>
