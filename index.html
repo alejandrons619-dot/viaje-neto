@@ -4,10 +4,138 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Viaje Neto" />
   <meta name="theme-color" content="#0b0d10" />
   <title>Viaje Neto</title>
+  <style>
+    :root { --bg:#0b0d10; --card:#161a20; --line:#2a313c; --text:#f3f5f7; --muted:#9aa3ad; --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#ff6a00; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:var(--bg); color:var(--text); padding:calc(env(safe-area-inset-top)+12px) 16px calc(env(safe-area-inset-bottom)+24px); }
+    h1 { font-size:22px; margin:0 0 2px; }
+    .sub { color:var(--muted); font-size:13px; margin:0 0 12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:12px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .stat { background:#0f1216; border-radius:12px; padding:10px; }
+    .stat b { display:block; font-size:22px; }
+    .stat span { font-size:11px; color:var(--muted); }
+    label { display:block; font-size:12px; color:var(--muted); margin:0 0 5px; }
+    input { width:100%; background:#0f1216; border:1px solid var(--line); color:var(--text); border-radius:12px; padding:13px 12px; font-size:22px; font-weight:700; margin-bottom:10px; }
+    button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px; font-weight:800; }
+    .go { background:var(--accent); color:#fff; }
+    .okbtn { background:#14532d; color:#86efac; }
+    .ghost { background:transparent; border:1px solid var(--line); color:var(--muted); margin-top:8px; }
+    .bar { height:10px; background:#0f1216; border-radius:99px; overflow:hidden; margin:8px 0 4px; }
+    .bar > i { display:block; height:100%; background:var(--accent); width:0; }
+    .trip { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:15px; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
+    .chips button { flex:1 1 28%; min-width:58px; background:#0f1216; color:var(--text); border:1px solid var(--line); padding:10px 0; font-size:15px; }
+    .chips button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  </style>
 </head>
-<body style="font-family:-apple-system,sans-serif;background:#0b0d10;color:#f3f5f7;margin:0;padding:20px">
-<p>Actualiza desde el archivo local si este placeholder aparece.</p>
-</body></html>
+<body>
+  <h1>Viaje Neto</h1>
+  <p class="sub" id="estado">Sin turno. Arranca cuando salgas.</p>
+  <div class="card">
+    <div class="row">
+      <div class="stat"><span>Neto hoy</span><b id="neto">$0</b></div>
+      <div class="stat"><span>$ / hora</span><b id="porhora">$0</b></div>
+      <div class="stat"><span>Bruto</span><b id="bruto">$0</b></div>
+      <div class="stat"><span>Viajes</span><b id="viajes">0</b></div>
+    </div>
+    <div class="bar"><i id="barra"></i></div>
+    <div class="sub" id="metaTxt">Meta semanal $10,000</div>
+    <button class="go" id="btnTurno" onclick="toggleTurno()">Iniciar turno</button>
+  </div>
+  <div class="card">
+    <label>Acaba de pagar</label>
+    <input id="pago" type="number" inputmode="decimal" placeholder="84" />
+    <label>Minutos (ir + viaje)</label>
+    <div class="chips" id="mins">
+      <button type="button" onclick="setMin(12)">12</button>
+      <button type="button" onclick="setMin(16)">16</button>
+      <button type="button" onclick="setMin(20)">20</button>
+      <button type="button" onclick="setMin(25)">25</button>
+      <button type="button" onclick="setMin(30)">30</button>
+      <button type="button" onclick="setMin(40)">40</button>
+    </div>
+    <button class="okbtn" onclick="addViaje()">Sumar viaje</button>
+    <p class="sub" id="check" style="margin-top:10px"></p>
+  </div>
+  <div class="card">
+    <div id="lista"></div>
+    <button class="ghost" onclick="resetDia()">Borrar día</button>
+  </div>
+  <script>
+    const META = 10000;
+    const GAS_MIN = 0.54;
+    let minSel = 16;
+    function load(){ return JSON.parse(localStorage.getItem('vn') || '{"start":null,"trips":[]}'); }
+    function save(d){ localStorage.setItem('vn', JSON.stringify(d)); }
+    function money(n){ return '$' + Math.round(n); }
+    function setMin(m){
+      minSel = m;
+      document.querySelectorAll('#mins button').forEach(b => b.classList.toggle('on', b.textContent==m));
+      const pago = parseFloat(document.getElementById('pago').value)||0;
+      if (!pago) { document.getElementById('check').textContent=''; return; }
+      const minimos = m*4;
+      document.getElementById('check').textContent = pago >= minimos ? 'SÍ. Mínimo era $'+minimos : 'NO. Contraoferta $'+minimos;
+    }
+    function hoursWorked(d){
+      if (!d.start) return 0;
+      return Math.max((Date.now()-d.start)/3600000, 0.08);
+    }
+    function render(){
+      const d = load();
+      const bruto = d.trips.reduce((s,t)=>s+t.pago,0);
+      const gas = d.trips.reduce((s,t)=>s+t.min*GAS_MIN,0);
+      const neto = bruto-gas;
+      const hrs = hoursWorked(d);
+      document.getElementById('bruto').textContent = money(bruto);
+      document.getElementById('neto').textContent = money(neto);
+      document.getElementById('viajes').textContent = d.trips.length;
+      document.getElementById('porhora').textContent = d.start ? money(neto/hrs) : '$0';
+      document.getElementById('barra').style.width = Math.min(100, neto/META*100) + '%';
+      document.getElementById('metaTxt').textContent = money(neto)+' de $10,000 · faltan '+money(Math.max(0,META-neto));
+      const btn = document.getElementById('btnTurno');
+      if (d.start) {
+        const t = new Date(d.start);
+        document.getElementById('estado').textContent = 'Turno desde '+t.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+        btn.textContent = 'Cerrar turno';
+        btn.className = 'ghost';
+      } else {
+        document.getElementById('estado').textContent = 'Sin turno. Arranca cuando salgas.';
+        btn.textContent = 'Iniciar turno';
+        btn.className = 'go';
+      }
+      document.getElementById('lista').innerHTML = d.trips.slice().reverse().map(t =>
+        '<div class="trip"><span>'+t.hora+' · '+t.min+' min</span><b>'+money(t.pago)+'</b></div>'
+      ).join('') || '<div class="sub">Aún no hay viajes.</div>';
+    }
+    function toggleTurno(){
+      const d = load();
+      if (d.start) d.start = null;
+      else d.start = Date.now();
+      save(d); render();
+    }
+    function addViaje(){
+      const pago = parseFloat(document.getElementById('pago').value);
+      if (!pago) return;
+      const d = load();
+      if (!d.start) d.start = Date.now();
+      const now = new Date();
+      d.trips.push({ pago, min: minSel, hora: now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) });
+      save(d);
+      document.getElementById('pago').value = '';
+      document.getElementById('check').textContent = '';
+      render();
+    }
+    function resetDia(){
+      if (confirm('¿Borrar el día?')) { save({start:null,trips:[]}); render(); }
+    }
+    setMin(16);
+    render();
+  </script>
+</body>
+</html>
