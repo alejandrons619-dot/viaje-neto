@@ -50,8 +50,9 @@
   </div>
   <div class="card">
     <label>Acaba de pagar</label>
-    <input id="pago" type="number" inputmode="decimal" placeholder="84" />
+    <input id="pago" type="number" inputmode="decimal" placeholder="84" oninput="checkPago()" />
     <label>Minutos (ir + viaje)</label>
+    <input id="minInput" type="number" inputmode="decimal" placeholder="18" oninput="onMinType()" />
     <div class="chips" id="mins">
       <button type="button" onclick="setMin(12)">12</button>
       <button type="button" onclick="setMin(16)">16</button>
@@ -74,13 +75,24 @@
     function load(){ return JSON.parse(localStorage.getItem('vn') || '{"start":null,"trips":[]}'); }
     function save(d){ localStorage.setItem('vn', JSON.stringify(d)); }
     function money(n){ return '$' + Math.round(n); }
+    function getMin(){ return parseFloat(document.getElementById('minInput').value) || minSel || 0; }
+    function checkPago(){
+      const pago = parseFloat(document.getElementById('pago').value)||0;
+      const m = getMin();
+      if (!pago || !m) { document.getElementById('check').textContent=''; return; }
+      const minimos = Math.ceil(m*4);
+      document.getElementById('check').textContent = pago >= minimos ? 'SÍ. Mínimo era $'+minimos : 'NO. Contraoferta $'+minimos;
+    }
+    function onMinType(){
+      minSel = getMin();
+      document.querySelectorAll('#mins button').forEach(b => b.classList.remove('on'));
+      checkPago();
+    }
     function setMin(m){
       minSel = m;
+      document.getElementById('minInput').value = m;
       document.querySelectorAll('#mins button').forEach(b => b.classList.toggle('on', b.textContent==m));
-      const pago = parseFloat(document.getElementById('pago').value)||0;
-      if (!pago) { document.getElementById('check').textContent=''; return; }
-      const minimos = m*4;
-      document.getElementById('check').textContent = pago >= minimos ? 'SÍ. Mínimo era $'+minimos : 'NO. Contraoferta $'+minimos;
+      checkPago();
     }
     function hoursWorked(d){
       if (!d.start) return 0;
@@ -102,12 +114,10 @@
       if (d.start) {
         const t = new Date(d.start);
         document.getElementById('estado').textContent = 'Turno desde '+t.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-        btn.textContent = 'Cerrar turno';
-        btn.className = 'ghost';
+        btn.textContent = 'Cerrar turno'; btn.className = 'ghost';
       } else {
         document.getElementById('estado').textContent = 'Sin turno. Arranca cuando salgas.';
-        btn.textContent = 'Iniciar turno';
-        btn.className = 'go';
+        btn.textContent = 'Iniciar turno'; btn.className = 'go';
       }
       document.getElementById('lista').innerHTML = d.trips.slice().reverse().map(t =>
         '<div class="trip"><span>'+t.hora+' · '+t.min+' min</span><b>'+money(t.pago)+'</b></div>'
@@ -115,8 +125,7 @@
     }
     function toggleTurno(){
       const d = load();
-      if (d.start) d.start = null;
-      else d.start = Date.now();
+      if (d.start) d.start = null; else d.start = Date.now();
       save(d); render();
     }
     function addViaje(){
@@ -124,8 +133,9 @@
       if (!pago) return;
       const d = load();
       if (!d.start) d.start = Date.now();
-      const now = new Date();
-      d.trips.push({ pago, min: minSel, hora: now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) });
+      const mins = getMin();
+      if (!mins) return;
+      d.trips.push({ pago, min: mins, hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) });
       save(d);
       document.getElementById('pago').value = '';
       document.getElementById('check').textContent = '';
@@ -134,7 +144,6 @@
     function resetDia(){
       if (confirm('¿Borrar el día?')) { save({start:null,trips:[]}); render(); }
     }
-    setMin(16);
     render();
   </script>
 </body>
