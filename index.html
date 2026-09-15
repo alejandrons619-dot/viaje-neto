@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Viaje Neto" />
   <meta name="theme-color" content="#0b0d10" />
   <title>Viaje Neto</title>
   <style>
-    :root { --bg:#0b0d10; --card:#161a20; --line:#2a313c; --text:#f3f5f7; --muted:#9aa3ad; --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#ff6a00; }
+    :root { --bg:#0b0d10; --card:#161a20; --line:#2a313c; --text:#f3f5f7; --muted:#9aa3ad; --accent:#ff6a00; }
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body { margin:0; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:var(--bg); color:var(--text); padding:calc(env(safe-area-inset-top)+12px) 16px calc(env(safe-area-inset-bottom)+24px); }
     h1 { font-size:22px; margin:0 0 2px; }
@@ -28,7 +26,8 @@
     .ghost { background:transparent; border:1px solid var(--line); color:var(--muted); margin-top:8px; }
     .bar { height:10px; background:#0f1216; border-radius:99px; overflow:hidden; margin:8px 0 4px; }
     .bar > i { display:block; height:100%; background:var(--accent); width:0; }
-    .trip { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:15px; }
+    .trip { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:15px; gap:8px; }
+    .del { width:auto; flex:0 0 auto; background:transparent; color:#ef4444; border:1px solid #3f1d1d; border-radius:10px; padding:6px 10px; font-size:13px; font-weight:700; }
     .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
     .chips button { flex:1 1 28%; min-width:58px; background:#0f1216; color:var(--text); border:1px solid var(--line); padding:10px 0; font-size:15px; }
     .chips button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -119,9 +118,10 @@
         document.getElementById('estado').textContent = 'Sin turno. Arranca cuando salgas.';
         btn.textContent = 'Iniciar turno'; btn.className = 'go';
       }
-      document.getElementById('lista').innerHTML = d.trips.slice().reverse().map(t =>
-        '<div class="trip"><span>'+t.hora+' · '+t.min+' min</span><b>'+money(t.pago)+'</b></div>'
-      ).join('') || '<div class="sub">Aún no hay viajes.</div>';
+      document.getElementById('lista').innerHTML = d.trips.slice().reverse().map((t, i) => {
+        const idx = d.trips.length - 1 - i;
+        return '<div class="trip"><span>'+t.hora+' · '+t.min+' min</span><b>'+money(t.pago)+'</b><button class="del" onclick="borrarViaje('+idx+')">Borrar</button></div>';
+      }).join('') || '<div class="sub">Aún no hay viajes.</div>';
     }
     function toggleTurno(){
       const d = load();
@@ -140,6 +140,11 @@
       document.getElementById('pago').value = '';
       document.getElementById('check').textContent = '';
       render();
+    }
+    function borrarViaje(i){
+      const d = load();
+      d.trips.splice(i,1);
+      save(d); render();
     }
     function resetDia(){
       if (confirm('¿Borrar el día?')) { save({start:null,trips:[]}); render(); }
