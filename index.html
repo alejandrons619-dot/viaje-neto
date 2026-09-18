@@ -16,17 +16,18 @@ h1 { font-size:22px; margin:0 0 2px; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:12px; }
 .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .stat { background:#0f1216; border-radius:12px; padding:10px; }
-.stat b { display:block; font-size:22px; }
+.stat b { display:block; font-size:20px; }
 .stat span { font-size:11px; color:var(--muted); }
 label { display:block; font-size:12px; color:var(--muted); margin:0 0 5px; }
 input { width:100%; background:#0f1216; border:1px solid var(--line); color:var(--text); border-radius:12px; padding:13px 12px; font-size:22px; font-weight:700; margin-bottom:10px; }
-button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px; font-weight:800; }
+button { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; }
 .go { background:var(--accent); color:#fff; }
 .okbtn { background:#14532d; color:#86efac; }
 .ghost { background:transparent; border:1px solid var(--line); color:var(--muted); margin-top:8px; }
+.warn { background:#3f1d1d; color:#fca5a5; margin-top:8px; }
 .bar { height:10px; background:#0f1216; border-radius:99px; overflow:hidden; margin:8px 0 4px; }
 .bar > i { display:block; height:100%; background:var(--accent); width:0; }
-.trip { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:15px; gap:8px; }
+.trip { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px; gap:8px; }
 .del { width:auto; flex:0 0 auto; background:transparent; color:#ef4444; border:1px solid #3f1d1d; border-radius:10px; padding:6px 10px; font-size:13px; font-weight:700; }
 .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
 .chips button { flex:1 1 28%; min-width:58px; background:#0f1216; color:var(--text); border:1px solid var(--line); padding:10px 0; font-size:15px; }
@@ -34,6 +35,12 @@ button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px;
 .day { margin-top:14px; }
 .day h2 { font-size:15px; margin:0 0 4px; display:flex; justify-content:space-between; }
 .day h2 span { color:var(--muted); font-weight:600; }
+.big { font-size:36px; font-weight:800; text-align:center; color:var(--accent); margin:4px 0 8px; }
+.tag { font-size:11px; color:var(--muted); }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:left; color:var(--muted); font-weight:600; padding:6px 0; }
+td { padding:7px 0; border-top:1px solid var(--line); }
+td:last-child, th:last-child { text-align:right; }
 </style>
 </head>
 <body>
@@ -43,8 +50,8 @@ button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px;
 <div class="row">
 <div class="stat"><span>Neto hoy</span><b id="netoHoy">$0</b></div>
 <div class="stat"><span>$ / hora hoy</span><b id="porhora">$0</b></div>
-<div class="stat"><span>Neto semana</span><b id="netoSem">$0</b></div>
-<div class="stat"><span>Viajes hoy</span><b id="viajes">0</b></div>
+<div class="stat"><span>Efectivo hoy</span><b id="efectivo">$0</b></div>
+<div class="stat"><span>App / tarjeta</span><b id="appago">$0</b></div>
 </div>
 <div class="bar"><i id="barra"></i></div>
 <div class="sub" id="metaTxt">Meta semanal $10,000</div>
@@ -60,7 +67,13 @@ button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px;
 <input id="metaHora" type="number" inputmode="decimal" placeholder="150" oninput="saveMeta()" />
 </div>
 <div class="card">
-<label>Acaba de pagar</label>
+<label>Minutos del viaje que te acaba de caer</label>
+<input id="minOferta" type="number" inputmode="decimal" placeholder="16" oninput="contra()" />
+<div class="sub">Contraoferta minima</div>
+<div class="big" id="contraBig">$0</div>
+</div>
+<div class="card">
+<label>Lo que pago</label>
 <input id="pago" type="number" inputmode="decimal" placeholder="84" oninput="checkPago()" />
 <label>Minutos (ir + viaje)</label>
 <input id="minInput" type="number" inputmode="decimal" placeholder="18" oninput="onMinType()" />
@@ -72,8 +85,28 @@ button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px;
 <button type="button" onclick="setMin(30)">30</button>
 <button type="button" onclick="setMin(40)">40</button>
 </div>
-<button class="okbtn" onclick="addViaje()">Sumar viaje</button>
+<label>Como te pagaron</label>
+<div class="chips">
+<button type="button" id="btnApp" class="on" onclick="setPagoTipo('app')">App / tarjeta</button>
+<button type="button" id="btnEfe" onclick="setPagoTipo('efectivo')">Efectivo</button>
+</div>
+<button class="okbtn" onclick="addViaje('viaje')">Sumar viaje</button>
+<button class="warn" onclick="addViaje('cancelado')">No llego / cancelado</button>
 <p class="sub" id="check" style="margin-top:10px"></p>
+</div>
+<div class="card">
+<label>Gasolina que le eche ($)</label>
+<input id="gasMonto" type="number" inputmode="decimal" placeholder="350" />
+<button class="go" onclick="addGas()">Sumar gasolina</button>
+<p class="sub" id="gasTxt" style="margin-top:10px"></p>
+</div>
+<div class="card">
+<label>Resumen de la semana</label>
+<table>
+<thead><tr><th>Dia</th><th>Viajes</th><th>Neto</th></tr></thead>
+<tbody id="semana"></tbody>
+</table>
+<p class="sub" id="semanaNota" style="margin-top:10px"></p>
 </div>
 <div class="card">
 <div id="lista"></div>
@@ -83,18 +116,24 @@ button { width:100%; border:0; border-radius:14px; padding:14px; font-size:17px;
 const META_SEM = 10000;
 const GAS_MIN = 0.54;
 let minSel = 16;
+let pagoTipo = 'app';
 function today(){ return new Date().toLocaleDateString('en-CA'); }
 function labelFecha(f){
   if (f === today()) return 'Hoy';
   const d = new Date(f + 'T12:00:00');
   return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'short' });
 }
-function empty(){ return { start:null, metaHora:150, trips:[] }; }
+function empty(){ return { start:null, metaHora:150, trips:[], gas:[] }; }
 function load(){
-  const d = JSON.parse(localStorage.getItem('vn') || 'null') || empty();
-  if (!d.metaHora) d.metaHora = 150;
+  const d = Object.assign(empty(), JSON.parse(localStorage.getItem('vn') || '{}'));
   if (!d.trips) d.trips = [];
-  d.trips.forEach(t => { if (!t.fecha) t.fecha = today(); });
+  if (!d.gas) d.gas = [];
+  if (!d.metaHora) d.metaHora = 150;
+  d.trips.forEach(t => {
+    if (!t.fecha) t.fecha = today();
+    if (!t.tipo) t.tipo = 'viaje';
+    if (!t.pagoTipo) t.pagoTipo = 'app';
+  });
   return d;
 }
 function save(d){ localStorage.setItem('vn', JSON.stringify(d)); }
@@ -104,22 +143,30 @@ function factor(){
   return meta/60 + GAS_MIN;
 }
 function getMin(){ return parseFloat(document.getElementById('minInput').value) || minSel || 0; }
+function contra(){
+  const m = parseFloat(document.getElementById('minOferta').value) || 0;
+  document.getElementById('contraBig').textContent = m ? money(Math.ceil(m * factor())) : '$0';
+}
 function checkPago(){
   const pago = parseFloat(document.getElementById('pago').value)||0;
   const m = getMin();
   if (!pago || !m) { document.getElementById('check').textContent=''; return; }
   const minimos = Math.ceil(m * factor());
-  document.getElementById('check').textContent = pago >= minimos ? 'SÍ. Mínimo era $'+minimos : 'NO. Contraoferta $'+minimos;
+  document.getElementById('check').textContent = pago >= minimos ? 'SI. Minimo era $'+minimos : 'NO. Contraoferta $'+minimos;
 }
 function onMinType(){
   minSel = getMin();
   document.querySelectorAll('#mins button').forEach(b => b.classList.remove('on'));
+  document.getElementById('minOferta').value = minSel;
+  contra();
   checkPago();
 }
 function setMin(m){
   minSel = m;
   document.getElementById('minInput').value = m;
+  document.getElementById('minOferta').value = m;
   document.querySelectorAll('#mins button').forEach(b => b.classList.toggle('on', b.textContent==m));
+  contra();
   checkPago();
 }
 function setMeta(n){
@@ -131,31 +178,61 @@ function saveMeta(){
   d.metaHora = parseFloat(document.getElementById('metaHora').value) || 150;
   save(d);
   document.querySelectorAll('#metas button').forEach(b => b.classList.toggle('on', Number(b.textContent)===d.metaHora));
+  contra();
   checkPago();
+}
+function setPagoTipo(t){
+  pagoTipo = t;
+  document.getElementById('btnApp').classList.toggle('on', t==='app');
+  document.getElementById('btnEfe').classList.toggle('on', t==='efectivo');
 }
 function hoursWorked(d){
   if (!d.start) return 0;
   return Math.max((Date.now()-d.start)/3600000, 0.08);
 }
-function netoDe(trips){
+function gasDia(d, fecha){
+  return d.gas.filter(g => g.fecha===fecha).reduce((s,g)=>s+g.monto,0);
+}
+function netoDe(d, trips, fecha){
   const bruto = trips.reduce((s,t)=>s+t.pago,0);
-  const gas = trips.reduce((s,t)=>s+t.min*GAS_MIN,0);
-  return { bruto, gas, neto: bruto-gas, n: trips.length };
+  const est = trips.reduce((s,t)=>s+(t.min||0)*GAS_MIN,0);
+  const real = fecha ? gasDia(d, fecha) : 0;
+  const gas = real > 0 ? real : est;
+  return { bruto, gas, neto: bruto-gas, n: trips.filter(t=>t.tipo!=='cancelado').length, canc: trips.filter(t=>t.tipo==='cancelado').length };
+}
+function last7(){
+  const out = [];
+  for (let i=0;i<7;i++){
+    const dt = new Date();
+    dt.setDate(dt.getDate()-i);
+    out.push(dt.toLocaleDateString('en-CA'));
+  }
+  return out;
 }
 function render(){
   const d = load();
   document.getElementById('metaHora').value = d.metaHora;
   document.querySelectorAll('#metas button').forEach(b => b.classList.toggle('on', Number(b.textContent)===d.metaHora));
   const hoyT = d.trips.filter(t => t.fecha === today());
-  const hoy = netoDe(hoyT);
-  const sem = netoDe(d.trips);
+  const hoy = netoDe(d, hoyT, today());
+  const semT = d.trips.filter(t => last7().includes(t.fecha));
+  const semBruto = semT.reduce((s,t)=>s+t.pago,0);
+  const semGas = last7().reduce((s,f)=>{
+    const g = gasDia(d,f);
+    if (g>0) return s+g;
+    return s + d.trips.filter(t=>t.fecha===f).reduce((a,t)=>a+(t.min||0)*GAS_MIN,0);
+  },0);
+  const semNeto = semBruto - semGas;
   const hrs = hoursWorked(d);
+  const efe = hoyT.filter(t=>t.pagoTipo==='efectivo').reduce((s,t)=>s+t.pago,0);
+  const app = hoyT.filter(t=>t.pagoTipo!=='efectivo').reduce((s,t)=>s+t.pago,0);
   document.getElementById('netoHoy').textContent = money(hoy.neto);
-  document.getElementById('netoSem').textContent = money(sem.neto);
-  document.getElementById('viajes').textContent = hoy.n;
+  document.getElementById('efectivo').textContent = money(efe);
+  document.getElementById('appago').textContent = money(app);
   document.getElementById('porhora').textContent = d.start ? money(hoy.neto/hrs) : '$0';
-  document.getElementById('barra').style.width = Math.min(100, sem.neto/META_SEM*100) + '%';
-  document.getElementById('metaTxt').textContent = money(sem.neto)+' de $10,000 · faltan '+money(Math.max(0,META_SEM-sem.neto));
+  document.getElementById('barra').style.width = Math.min(100, semNeto/META_SEM*100) + '%';
+  document.getElementById('metaTxt').textContent = money(semNeto)+' de $10,000 · faltan '+money(Math.max(0,META_SEM-semNeto));
+  document.getElementById('gasTxt').textContent = gasDia(d, today()) ? 'Gasolina hoy: '+money(gasDia(d, today())) : 'Hoy no has apuntado gasolina. Se usa estimado.';
   const btn = document.getElementById('btnTurno');
   if (d.start) {
     const t = new Date(d.start);
@@ -165,36 +242,64 @@ function render(){
     document.getElementById('estado').textContent = 'Sin turno. Arranca cuando salgas.';
     btn.textContent = 'Iniciar turno'; btn.className = 'go';
   }
+  const days = last7();
+  let best = {n:-1e9, f:''};
+  document.getElementById('semana').innerHTML = days.map(f => {
+    const ts = d.trips.filter(t => t.fecha===f);
+    const tot = netoDe(d, ts, f);
+    if (tot.neto > best.n) best = {n: tot.neto, f};
+    const name = f===today() ? 'Hoy' : new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short', day:'numeric'});
+    return '<tr><td>'+name+'</td><td>'+tot.n+(tot.canc?' +'+tot.canc+' canc':'')+'</td><td>'+money(tot.neto)+'</td></tr>';
+  }).join('');
+  document.getElementById('semanaNota').textContent = best.f ? 'Mejor dia: '+labelFecha(best.f)+' con '+money(best.n) : '';
   const byDay = {};
   d.trips.forEach((t, idx) => {
     if (!byDay[t.fecha]) byDay[t.fecha] = [];
     byDay[t.fecha].push({t, idx});
   });
-  const days = Object.keys(byDay).sort().reverse();
-  document.getElementById('lista').innerHTML = days.map(f => {
+  const keys = Object.keys(byDay).sort().reverse();
+  document.getElementById('lista').innerHTML = keys.map(f => {
     const items = byDay[f];
-    const tot = netoDe(items.map(x => x.t));
+    const tot = netoDe(d, items.map(x=>x.t), f);
     return '<div class="day"><h2>'+labelFecha(f)+'<span>'+money(tot.neto)+' · '+tot.n+' viajes</span></h2>' +
-      items.slice().reverse().map(x =>
-        '<div class="trip"><span>'+x.t.hora+' · '+x.t.min+' min</span><b>'+money(x.t.pago)+'</b><button class="del" onclick="borrarViaje('+x.idx+')">Borrar</button></div>'
-      ).join('') + '</div>';
-  }).join('') || '<div class="sub">Aún no hay viajes.</div>';
+      items.slice().reverse().map(x => {
+        const tag = (x.t.tipo==='cancelado'?'cancelado · ':'') + (x.t.pagoTipo==='efectivo'?'efectivo':'app');
+        return '<div class="trip"><span>'+x.t.hora+' · '+(x.t.min||0)+' min<br><span class="tag">'+tag+'</span></span><b>'+money(x.t.pago)+'</b><button class="del" onclick="borrarViaje('+x.idx+')">Borrar</button></div>';
+      }).join('') + '</div>';
+  }).join('') || '<div class="sub">Aun no hay viajes.</div>';
+  contra();
 }
 function toggleTurno(){
   const d = load();
   if (d.start) d.start = null; else d.start = Date.now();
   save(d); render();
 }
-function addViaje(){
+function addViaje(tipo){
   const pago = parseFloat(document.getElementById('pago').value);
   const mins = getMin();
-  if (!pago || !mins) return;
+  if (tipo==='viaje' && (!pago || !mins)) return;
   const d = load();
   if (!d.start) d.start = Date.now();
-  d.trips.push({ pago, min: mins, hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}), fecha: today() });
+  d.trips.push({
+    pago: pago || 0,
+    min: mins || 0,
+    hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    fecha: today(),
+    tipo: tipo || 'viaje',
+    pagoTipo: pagoTipo
+  });
   save(d);
   document.getElementById('pago').value = '';
   document.getElementById('check').textContent = '';
+  render();
+}
+function addGas(){
+  const monto = parseFloat(document.getElementById('gasMonto').value);
+  if (!monto) return;
+  const d = load();
+  d.gas.push({ monto, fecha: today(), hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) });
+  save(d);
+  document.getElementById('gasMonto').value = '';
   render();
 }
 function borrarViaje(i){
@@ -203,7 +308,7 @@ function borrarViaje(i){
   save(d); render();
 }
 function resetDia(){
-  if (!confirm('¿Borrar solo los viajes de hoy?')) return;
+  if (!confirm('Borrar solo los viajes de hoy?')) return;
   const d = load();
   d.trips = d.trips.filter(t => t.fecha !== today());
   save(d); render();
