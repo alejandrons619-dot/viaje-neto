@@ -109,6 +109,23 @@ td:last-child, th:last-child { text-align:right; }
 <p class="sub" id="semanaNota" style="margin-top:10px"></p>
 </div>
 <div class="card">
+<label>Se me borro un dia</label>
+<input id="ajusteFecha" type="date" />
+<div class="row">
+<div>
+<label>Viajes</label>
+<input id="ajusteN" type="number" inputmode="decimal" placeholder="14" />
+</div>
+<div>
+<label>Bruto</label>
+<input id="ajusteBruto" type="number" inputmode="decimal" placeholder="1419" />
+</div>
+</div>
+<label>Neto (despues de gas)</label>
+<input id="ajusteNeto" type="number" inputmode="decimal" placeholder="1244" />
+<button class="go" onclick="addAjuste()">Cargar ese dia</button>
+</div>
+<div class="card">
 <div id="lista"></div>
 <button class="ghost" onclick="resetDia()">Borrar solo hoy</button>
 </div>
@@ -194,11 +211,13 @@ function gasDia(d, fecha){
   return d.gas.filter(g => g.fecha===fecha).reduce((s,g)=>s+g.monto,0);
 }
 function netoDe(d, trips, fecha){
-  const bruto = trips.reduce((s,t)=>s+t.pago,0);
-  const est = trips.reduce((s,t)=>s+(t.min||0)*GAS_MIN,0);
+  const res = trips.filter(t=>t.tipo==='resumen');
+  const rest = trips.filter(t=>t.tipo!=='resumen');
+  const bruto = rest.reduce((s,t)=>s+t.pago,0) + res.reduce((s,t)=>s+(t.pago||0),0);
+  const est = rest.reduce((s,t)=>s+(t.min||0)*GAS_MIN,0);
   const real = fecha ? gasDia(d, fecha) : 0;
-  const gas = real > 0 ? real : est;
-  return { bruto, gas, neto: bruto-gas, n: trips.filter(t=>t.tipo!=='cancelado').length, canc: trips.filter(t=>t.tipo==='cancelado').length };
+  const neto = res.reduce((s,t)=>s+(t.neto!=null?t.neto:t.pago),0) + rest.reduce((s,t)=>s+t.pago,0) - (real>0?real:est);
+  return { bruto, gas: bruto-neto, neto, n: rest.filter(t=>t.tipo!=='cancelado').length + res.reduce((s,t)=>s+(t.n||0),0), canc: rest.filter(t=>t.tipo==='cancelado').length };
 }
 function last7(){
   const out = [];
@@ -215,14 +234,7 @@ function render(){
   document.querySelectorAll('#metas button').forEach(b => b.classList.toggle('on', Number(b.textContent)===d.metaHora));
   const hoyT = d.trips.filter(t => t.fecha === today());
   const hoy = netoDe(d, hoyT, today());
-  const semT = d.trips.filter(t => last7().includes(t.fecha));
-  const semBruto = semT.reduce((s,t)=>s+t.pago,0);
-  const semGas = last7().reduce((s,f)=>{
-    const g = gasDia(d,f);
-    if (g>0) return s+g;
-    return s + d.trips.filter(t=>t.fecha===f).reduce((a,t)=>a+(t.min||0)*GAS_MIN,0);
-  },0);
-  const semNeto = semBruto - semGas;
+  const semNeto = last7().reduce((s,f)=> s + netoDe(d, d.trips.filter(t=>t.fecha===f), f).neto, 0);
   const hrs = hoursWorked(d);
   const efe = hoyT.filter(t=>t.pagoTipo==='efectivo').reduce((s,t)=>s+t.pago,0);
   const app = hoyT.filter(t=>t.pagoTipo!=='efectivo').reduce((s,t)=>s+t.pago,0);
@@ -263,10 +275,15 @@ function render(){
     const tot = netoDe(d, items.map(x=>x.t), f);
     return '<div class="day"><h2>'+labelFecha(f)+'<span>'+money(tot.neto)+' · '+tot.n+' viajes</span></h2>' +
       items.slice().reverse().map(x => {
-        const tag = (x.t.tipo==='cancelado'?'cancelado · ':'') + (x.t.pagoTipo==='efectivo'?'efectivo':'app');
-        return '<div class="trip"><span>'+x.t.hora+' · '+(x.t.min||0)+' min<br><span class="tag">'+tag+'</span></span><b>'+money(x.t.pago)+'</b><button class="del" onclick="borrarViaje('+x.idx+')">Borrar</button></div>';
+        const tag = x.t.tipo==='resumen' ? (x.t.n||0)+' viajes · resumen' : ((x.t.tipo==='cancelado'?'cancelado · ':'') + (x.t.pagoTipo==='efectivo'?'efectivo':'app'));
+        const shown = x.t.tipo==='resumen' && x.t.neto!=null ? x.t.neto : x.t.pago;
+        return '<div class="trip"><span>'+(x.t.hora||'')+' · '+(x.t.min||0)+' min<br><span class="tag">'+tag+'</span></span><b>'+money(shown)+'</b><button class="del" onclick="borrarViaje('+x.idx+')">Borrar</button></div>';
       }).join('') + '</div>';
   }).join('') || '<div class="sub">Aun no hay viajes.</div>';
+  if (!document.getElementById('ajusteFecha').value) {
+    const ayer = new Date(); ayer.setDate(ayer.getDate()-1);
+    document.getElementById('ajusteFecha').value = ayer.toLocaleDateString('en-CA');
+  }
   contra();
 }
 function toggleTurno(){
@@ -280,17 +297,24 @@ function addViaje(tipo){
   if (tipo==='viaje' && (!pago || !mins)) return;
   const d = load();
   if (!d.start) d.start = Date.now();
-  d.trips.push({
-    pago: pago || 0,
-    min: mins || 0,
-    hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-    fecha: today(),
-    tipo: tipo || 'viaje',
-    pagoTipo: pagoTipo
-  });
+  d.trips.push({ pago: pago || 0, min: mins || 0, hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}), fecha: today(), tipo: tipo || 'viaje', pagoTipo: pagoTipo });
   save(d);
   document.getElementById('pago').value = '';
   document.getElementById('check').textContent = '';
+  render();
+}
+function addAjuste(){
+  const fecha = document.getElementById('ajusteFecha').value;
+  const n = parseFloat(document.getElementById('ajusteN').value) || 0;
+  const bruto = parseFloat(document.getElementById('ajusteBruto').value);
+  const neto = parseFloat(document.getElementById('ajusteNeto').value);
+  if (!fecha || !bruto) return;
+  const d = load();
+  d.trips.push({ pago: bruto, neto: isNaN(neto) ? bruto : neto, n: n, min: 0, hora: 'resumen', fecha, tipo: 'resumen', pagoTipo: 'app' });
+  save(d);
+  document.getElementById('ajusteN').value = '';
+  document.getElementById('ajusteBruto').value = '';
+  document.getElementById('ajusteNeto').value = '';
   render();
 }
 function addGas(){
